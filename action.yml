@@ -1,22 +1,30 @@
-name: "{GitHub action name}"
-description: "{GitHub action description}"
+name: "Invoke-Build"
+description: "Install specified version on Invoke-Build module and start build with Invoke-Build"
 author: "Sergey.S.Betke@yandex.ru"
 branding:
-  icon: "download"
+  icon: "package"
   color: blue
 inputs:
-  param-id: # param id
-    description: "param description"
-    required: true
-    default: "World"
-outputs:
-  random-number: # output value id
-    description: "Random number"
-    value: ${{ steps.main.outputs.output-param-id }}
+  version:
+    description: "InvokeBuild required version"
+    required: false
+    default: "latest"
+  task:
+    description: "build tasks"
+    required: false
+    default: "."
+  file:
+    description: "build file path"
+    required: false
+    default: "*.build.ps1"
+  verbose:
+    description: "verbose output"
+    required: false
+    default: "true"
 runs:
   using: "composite"
   steps:
     - id: main
       shell: powershell
       run: |
-          . "${{ github.action_path }}/Invoke-GitHubAction.ps1";
+        . "${{ github.action_path }}/Invoke-GitHubAction.ps1";

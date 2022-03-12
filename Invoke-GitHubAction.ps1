@@ -7,18 +7,16 @@ try
 	try
 	{
 		Set-PSRepository -Name PSGallery -InstallationPolicy Trusted;
-		Register-PackageSource -Name 'nuget.org' -Location 'https://api.nuget.org/v3/index.json' -ProviderName NuGet -Trusted -Force | Out-Null;
 	}
 	finally
 	{
 		Exit-ActionOutputGroup;
 	};
 
-	Enter-ActionOutputGroup -Name 'Install PSDepend';
+	$ModuleName = 'InvokeBuild';
+	Enter-ActionOutputGroup -Name "Install $ModuleName";
 	try
 	{
-		$ModuleName = 'PSDepend';
-
 		$installModuleParams = @{ Name = $ModuleName; Force = $true };
 		$VersionParam = ( Get-ActionInput 'version' );
 		if ( $VersionParam -and ( $VersionParam -ne 'latest' ) )
@@ -63,15 +61,26 @@ try
 		Exit-ActionOutputGroup;
 	};
 
-	$recursiveParam = ( Get-ActionInput -Name 'recurse' );
-	$recursive = -not ( $recursiveParam -and ( $recursiveParam -ne 'true' ) );
-	$verboseParam = ( Get-ActionInput -Name 'verbose' );
-	$verbose = -not ( $verboseParam -and ( $verboseParam -ne 'true' ) );
+	$params = @{ };
 
-	Invoke-PSDepend `
-		-Recurse:$recursive `
-		-Confirm:$false `
-		-Verbose:$verbose;
+	$fileParam = ( Get-ActionInput -Name 'file' );
+	if ( $fileParam )
+	{
+		$params.Add( 'File', $fileParam );
+	};
+	$taskParam = ( Get-ActionInput -Name 'task' );
+	if ( $taskParam )
+	{
+		$params.Add( 'Task', $taskParam );
+	};
+
+	$verboseParam = ( Get-ActionInput -Name 'verbose' );
+	if ( -not ( $verboseParam -and ( $verboseParam -ne 'true' ) ) )
+	{
+		$params.Add( 'Verbose', $true );
+	};
+
+	Invoke-Build @$params;
 }
 catch
 {
