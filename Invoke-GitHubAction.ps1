@@ -80,7 +80,7 @@ try
 		$params.Add( 'Verbose', $true );
 	};
 
-	Invoke-Build @$params;
+	Invoke-Build @params;
 }
 catch
 {
