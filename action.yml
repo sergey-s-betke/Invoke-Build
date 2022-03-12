@@ -16,7 +16,7 @@ inputs:
   file:
     description: "build file path"
     required: false
-    default: "*.build.ps1"
+    default: ".build.ps1"
   verbose:
     description: "verbose output"
     required: false
@@ -27,4 +27,9 @@ runs:
     - id: main
       shell: powershell
       run: |
-        . "${{ github.action_path }}/Invoke-GitHubAction.ps1";
+        . "${{ github.action_path }}/Invoke-GitHubAction.ps1" `
+          -InvokeBuildVersion "${{ inputs.version }}" `
+          -Task ( "${{ inputs.task }}" -split ',' ) `
+          -File "${{ inputs.file }}" `
+          -Verbose:( "${{ inputs.verbose }}" -eq "true" ) `
+        ;

@@ -1,4 +1,31 @@
-#!/usr/bin/env pwsh
+# Copyright © 2022 Sergei S. Betke
+
+<#
+	.SYNOPSIS
+		Install InvokeBuild and run Invoke-Build
+#>
+
+[CmdletBinding()]
+
+Param(
+
+	# Build tasks
+	[Parameter( Mandatory = $False, Position = 0 )]
+	[System.String[]]
+	$Task = '.',
+
+	# Build file path
+	[Parameter( Mandatory = $False, Position = 1 )]
+	[System.String]
+	$File = '.build.ps1',
+
+	# InvokeBuild required version
+	[Parameter( Mandatory = $False )]
+	[System.String]
+	$InvokeBuildVersion = 'latest'
+
+)
+
 Import-Module $PSScriptRoot/lib/GitHubActionsCore;
 
 try
@@ -18,14 +45,9 @@ try
 	try
 	{
 		$installModuleParams = @{ Name = $ModuleName; Force = $true };
-		$VersionParam = ( Get-ActionInput 'version' );
-		if ( $VersionParam -and ( $VersionParam -ne 'latest' ) )
+		if ( $InvokeBuildVersion -ne 'latest' )
 		{
-			$Version = $VersionParam;
-		};
-
-		if ( $Version )
-		{
+			$Version = $InvokeBuildVersion;
 			$installModParams.Add( 'RequiredVersion', $Version );
 		};
 
@@ -61,26 +83,10 @@ try
 		Exit-ActionOutputGroup;
 	};
 
-	$params = @{ };
-
-	$fileParam = ( Get-ActionInput -Name 'file' );
-	if ( $fileParam )
-	{
-		$params.Add( 'File', $fileParam );
-	};
-	$taskParam = ( Get-ActionInput -Name 'task' );
-	if ( $taskParam )
-	{
-		$params.Add( 'Task', $taskParam );
-	};
-
-	$verboseParam = ( Get-ActionInput -Name 'verbose' );
-	if ( -not ( $verboseParam -and ( $verboseParam -ne 'true' ) ) )
-	{
-		$params.Add( 'Verbose', $true );
-	};
-
-	Invoke-Build @params;
+	Invoke-Build `
+		-File $File `
+		-Task $Task `
+		-Verbose:( $PSCmdlet.MyInvocation.BoundParameters['Verbose'] -eq $true );
 }
 catch
 {
